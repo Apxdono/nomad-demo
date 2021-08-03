@@ -2,15 +2,19 @@
 - hosts: consul_nomad
   become: yes
   roles:
-    - name: jre
     - name: docker
       tags: ['docker']
-    - name: syslog-ng
-      tags: ['syslog-ng']
-    - name: vault
-      tags: ['vault']
     - name: nomad
       tags: ['nomad']
+    - name: cni
+      tags: ['cni']
+  # tasks:
+  # - name: Start nomad service
+  #   systemd:
+  #     name: nomad
+  #     state: restarted
+  #     daemon_reload: yes
+  #     enabled: yes
 
   post_tasks:
     - name: Disable systemd-resolved service
@@ -45,9 +49,6 @@
       #
       # OF COURSE AUDIT LOGS OF YOUR SECRET MANAGEMENT
       # *NEVER* BELONG ON AN OUTSIDE FACING MACHINE!
-    - name: syslog-ng
-      tags: ['syslog-ng']
-
 
 - hosts: localhost
   tasks:

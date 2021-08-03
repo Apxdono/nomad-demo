@@ -2,6 +2,7 @@
 domain: demo
 
 consul_version: "1.9.4"
+cni_plugins_version: "0.9.0"
 nomad_version: "1.0.4"
 vault_version: "1.6.3"
 coredns_version: "1.8.3"

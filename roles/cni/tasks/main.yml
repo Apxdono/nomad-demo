@@ -1,0 +1,87 @@
+---
+
+- name: Create cni plugins directory
+  file:
+    path: /opt/cni/bin
+    state: directory
+    owner: nomad
+    group: nomad
+    mode: 0755
+
+- name: Create cni plugins directory
+  file:
+    path: /opt/cni/bin
+    state: directory
+    owner: nomad
+    group: nomad
+    mode: 0755
+
+- name: Create cni plugins config directory
+  file:
+    path: /opt/cni/conf.d
+    state: directory
+    owner: nomad
+    group: nomad
+    mode: 0755
+
+- name: Download cni-plugins binary
+  delegate_to: localhost
+  run_once: true
+  become: no
+  get_url:
+    url: https://github.com/containernetworking/plugins/releases/download/v{{ cni_plugins_version }}/cni-plugins-linux-amd64-v{{ cni_plugins_version }}.tgz
+    dest: "{{ playbook_dir }}/.ansible_download_cache/cni-plugins-linux-amd64-v{{ cni_plugins_version }}.tgz"
+    mode: '0440'
+    checksum: "sha256:https://github.com/containernetworking/plugins/releases/download/v{{ cni_plugins_version }}/cni-plugins-linux-amd64-v{{ cni_plugins_version }}.tgz.sha256"
+
+- name: Install cni-plugins binary
+  unarchive:
+    src: "{{ playbook_dir }}/.ansible_download_cache/cni-plugins-linux-amd64-v{{ cni_plugins_version }}.tgz"
+    dest: /opt/cni/bin
+    owner: nomad
+    group: nomad
+
+- name: Setup a CNI network
+  template:
+    src: "{{ item }}"
+    dest: "/opt/cni/conf.d/"
+    owner: nomad
+    group: nomad
+    mode: 0644
+  with_fileglob:
+    - "{{ playbook_dir }}/roles/cni/templates/*.conflist"
+
+- name: Download weave
+  delegate_to: localhost
+  run_once: true
+  become: no
+  get_url:
+    url: https://git.io/weave
+    dest: "{{ playbook_dir }}/.ansible_download_cache/weave"
+    mode: '0744'
+
+- name: Install weave
+  copy:
+    src: "{{ playbook_dir }}/.ansible_download_cache/weave"
+    dest: /opt/cni/bin/weave
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0744
+
+- name: Launch weave
+  shell:
+    #cmd: "/opt/cni/bin/weave stop"
+    cmd: "/opt/cni/bin/weave stop; /opt/cni/bin/weave launch 10.1.10.21 10.1.10.22"
+
+- name: Setup docker env with weave
+  shell:
+    #cmd: "echo '' > /etc/nomad.d/nomadenv.conf"
+    cmd: "/opt/cni/bin/weave env | awk '{print $2;}' > /etc/nomad.d/nomadenv.conf"
+
+- name: Start nomad service
+  systemd:
+    name: nomad
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+

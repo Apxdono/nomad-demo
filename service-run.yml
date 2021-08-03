@@ -1,0 +1,13 @@
+---
+- hosts: consul_nomad
+  tasks:
+    - name: Copy job file
+      copy:
+        src: "{{ playbook_dir }}/nomad_jobs/coh-service.nomad"
+        dest: "/home/{{ ansible_ssh_user }}/nomad_jobs/coh-service.nomad"
+        owner: "{{ ansible_ssh_user }}"
+        group: "{{ ansible_ssh_user }}"
+        mode: 0644
+    - name: Run job
+      shell:
+        cmd: nomad run nomad_jobs/coh-service.nomad

@@ -1,0 +1,19 @@
+---
+- hosts: consul_nomad
+  tasks:
+    - name: Copy Docker image
+      copy:
+        src: "coh-service/target/coh-service.tar"
+        dest: "/tmp/coh-service.tar"
+        owner: "{{ ansible_ssh_user }}"
+        group: "{{ ansible_ssh_user }}"
+        mode: 0644
+    - name: Install Docker image
+      shell:
+        cmd: docker load -i /tmp/coh-service.tar
+    - name: Remove Docker file
+      shell:
+        cmd: rm /tmp/coh-service.tar
+    - name: Retag
+      shell:
+        cmd: docker tag coh-service:latest coh-service:local

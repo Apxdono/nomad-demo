@@ -8,7 +8,7 @@ It may be worth considering alternatives, especially if not only containers are 
 
 This demo project uses Consul, Nomad and Vault from HashiCorp:
 
-<img src=".images/consul-logo.svg" align="left" width="200" alt=""> 
+<img src=".images/consul-logo.svg" align="left" width="200" alt="">
 Consul is a service networking solution to connect services across any runtime platform. Service registry, integrated health checks, and DNS and HTTP interfaces enable any service to discover and be discovered by other services.<br clear="both"><br>
 
 <img src=".images/nomad-logo.svg" align="left" width="200" alt=""> Nomad is a workload orchestrator that deploys and manages containers and non-containerized applications at scale. It addresses the technical complexity of workload orchestration across the cloud, on-prem, and hybrid infrastructure.
@@ -66,14 +66,14 @@ Also your host system needs at least 4GB of RAM available and about 14GB of free
    cd nomad-demo
    ```
 
-2. **Create and provision virtual machines with Vagrant:**  
+2. **Create and provision virtual machines with Vagrant:**
    Vagrant will create four virtual machines with IPs _10.1.10.20–23_. If your local network already uses this address range, you can define an alternate range in the `Vagrantfile` before continuing with the installation.
 
    As there are some logical dependencies in the setup, it is split up in multiple parts:
 
      1. Create the four VMs in VirtualBox
      2. Setup the Consul cluster and elect a leader
-     3. Setup Vault (which requires the working Consul cluster),  
+     3. Setup Vault (which requires the working Consul cluster),
         Nomad (which in turn requires a token from Vault) and the load balancer VM.
      4. Deploy the provided demo jobs on Nomad
 
@@ -86,7 +86,7 @@ Also your host system needs at least 4GB of RAM available and about 14GB of free
      && ansible-playbook -i localhost playbook.yml
    ```
 
-3. <strong id="etc-hosts">Configure host names for all services:</strong>  
+3. <strong id="etc-hosts">Configure host names for all services:</strong>
    On your machine, add the following lines to your `/etc/hosts`. If you changed the IP range before in your `Vagrantfile`, make sure to adjust it here as well:
 
    ```
@@ -185,7 +185,7 @@ And all this with granular access control and full audit trail.
 The process of [initializing](https://www.vaultproject.io/docs/commands/operator/init) and [unsealing](https://www.vaultproject.io/docs/commands/operator/unseal) vault are already automated in Ansible for this demo, however you should familiarize yourself with the concept:
 
 > When a Vault server is started, it starts in a *sealed* state. In this state, Vault is configured to know where and how to access the physical storage, but doesn't know how to decrypt any of it.
-> 
+>
 > *Unsealing* is the process of constructing the master key necessary to read the decryption key to decrypt the data, allowing access to the Vault.
 
 – [»Concepts: Seal/Unseal«](https://www.vaultproject.io/docs/concepts/seal) (from the Vault documentation)
@@ -201,7 +201,7 @@ ansible-playbook \
   unseal-vault.yml
 ```
 
-The keys for unsealing and the user tokens to access Vault are stored under `credentials`. 
+The keys for unsealing and the user tokens to access Vault are stored under `credentials`.
 
 #### Workflow for requesting secrets from Vault in your app
 
@@ -231,7 +231,7 @@ For this demo I tried to keep the setup simple, but already a bit closer to a pr
 
 - Separate the control plane from the worker pool running the applications, so faulty or malicious workloads have less impact on the overall system integrity and stability. Three nodes running a Consul and Nomad server are required to run in high availability (HA) mode. This allows Consul to reach a quorum, even in one node should go down. Each worker node however should run a Consul and Nomad Client, with the Nomad client talking to the Consul client and the Consul client talking to the Consul server.
 
-- Access Control Lists (ACLs) are indispensable to secure UI, API, CLI, service and agent communications on [Consul](https://www.consul.io/docs/acl/index.html), [Nomad](https://learn.hashicorp.com/nomad/acls/fundamentals) and [Vault](https://www.vaultproject.io/docs/concepts/policies). 
+- Access Control Lists (ACLs) are indispensable to secure UI, API, CLI, service and agent communications on [Consul](https://www.consul.io/docs/acl/index.html), [Nomad](https://learn.hashicorp.com/nomad/acls/fundamentals) and [Vault](https://www.vaultproject.io/docs/concepts/policies).
 
 - Apply thorough network security measures (firewall, isolation, etc.) both from the outside and in between the machines.
 
@@ -240,7 +240,7 @@ For this demo I tried to keep the setup simple, but already a bit closer to a pr
 - Make all web-services only available via HTTPS. Traefik offers great support for [automatic certificate management with Let's Encrypt](https://docs.traefik.io/https/acme/), for example.
 
 - Monitor [Vault's audit log](https://www.vaultproject.io/docs/audit). All Vault API requests (internal and external) are logged to detect if someone tries to gain access to your secrets or tamper with them. This demo uses the `syslog` audit backend to send those logs to the `loadbalancer`, in lack of a different VM – **In production of course, audit logs *never* belong on an outside facing machine!**
-  
+
   They are stored in `/var/log/vault/audit.log` and the file is rotated daily. However, it is better to send them to [Elasticsearch](https://www.elastic.co/elasticsearch/) for example and have them analyzed with [Kibana](https://www.elastic.co/elasticsearch/).
 
 

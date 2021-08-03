@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Build Jar
+      shell:
+        cmd: mvn clean install
+        chdir: coh-service
+    - name: Build Docker image
+      shell:
+        cmd: docker build -t coh-service . && docker save coh-service:latest > target/coh-service.tar
+        chdir: coh-service

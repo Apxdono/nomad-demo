@@ -1,0 +1,64 @@
+<?xml version='1.0'?>
+
+          <coherence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns="http://xmlns.oracle.com/coherence/coherence-operational-config"
+                    xsi:schemaLocation="http://xmlns.oracle.com/coherence/coherence-operational-config coherence-operational-config.xsd">
+
+              <cluster-config>
+                  <member-identity>
+                      <cluster-name system-property="coherence.cluster">coh-cluster-poc</cluster-name>
+                      <role-name>COH_ROLE</role-name>
+                  </member-identity>
+
+                  <unicast-listener>
+                      <socket-provider>tcp</socket-provider>
+                      <well-known-addresses>
+                          <!--address id="main" system-property="coherence.unicastip">0.0.0.0</address>
+                          <address id="dns">coh-job-cluster.service.consul</address-->
+
+                          <!--address-provider>
+                              <class-name>com.beerduo.service.pg.coh.RefreshableConsulAddressProvider</class-name>
+                              <init-params>
+                                  <init-param>
+                                      <param-type>java.lang.String</param-type>
+                                      <param-value system-property="coh.clustername">coh-cl</param-value>
+                                  </init-param>
+                              </init-params>
+                          </address-provider-->
+
+                      </well-known-addresses>
+                      <machine-id system-property="coh.alloc.id">1</machine-id>
+                      <!--address system-property="coherence.unicastip">1.1.1.1</address>
+                      <port system-property="coherence.clusterport">3100</port-->
+                  </unicast-listener>
+
+                  <!--multicast-listener>
+                      <time-to-live system-property="coherence.ttl">10</time-to-live>
+                      <address system-property="coherence.clusteraddress">0.0.0.0</address>
+                      <port system-property="coherence.clusterport">3101</port>
+                      <multicast-threshold-percent>100</multicast-threshold-percent>
+                  </multicast-listener-->
+
+                  <socket-providers>
+                      <socket-provider id="tcp">
+                          <tcp/>
+                      </socket-provider>
+                  </socket-providers>
+              </cluster-config>
+
+              <logging-config>
+                  <destination>slf4j</destination>
+                  <logger-name>Палочка Коха</logger-name>
+                  <message-format>[{thread}] {text}</message-format>
+              </logging-config>
+
+              <configurable-cache-factory-config>
+                  <init-params>
+                      <init-param>
+                          <param-type>java.lang.String</param-type>
+                          <param-value system-property="coherence.cacheconfig">cache-config.xml</param-value>
+                      </init-param>
+                  </init-params>
+              </configurable-cache-factory-config>
+
+          </coherence>

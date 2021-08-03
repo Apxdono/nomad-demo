@@ -2,12 +2,13 @@ def get_ip(index = 1)
   $ip_range.sub('xx', (index).to_s)
 end
 
-$max_nodes = 3
+$max_nodes = 2
 $ip_range = '10.1.10.2xx'
 $all_nodes = Array.new($max_nodes).fill { |i| "#{get_ip(i + 1)}" }
 
 $ansible_groups = {
-  "consul_nomad" => ["consul-nomad-node[1:#{$max_nodes}]"],
+  "single_nomad" => ["consul-nomad-node1"],
+  "consul_nomad" => ["consul-nomad-node1","consul-nomad-node2"],
   "all:vars" => {
     "vagrant_consul_nomad_ips" => $all_nodes,
     "vagrant_loadbalancer_ip" => "#{get_ip(0)}"
@@ -22,6 +23,7 @@ Vagrant.configure(2) do |config|
       node_ip_address = "#{get_ip(i)}"
       node.vm.network "private_network", ip: node_ip_address
       node.vm.hostname = "consul-nomad-node#{i}"
+      node.vm.disk :disk, size: "8GB", primary: true
     end
   end
 
@@ -29,11 +31,22 @@ Vagrant.configure(2) do |config|
     node_ip_address = "#{get_ip(0)}"
     lb.vm.network "private_network", ip: node_ip_address
     lb.vm.hostname = "loadbalancer"
+    lb.vm.disk :disk, size: "4GB", primary: true
+    lb.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+    end
   end
 
   # First, we need our Consul cluster up and running
   config.vm.provision "consul", type: "ansible", run: "never" do |ansible|
     ansible.playbook = "playbook-consul.yml"
+    ansible.groups = $ansible_groups
+    ansible.limit = "consul_nomad"
+  end
+
+  # First, we need our Consul cluster up and running
+  config.vm.provision "cni", type: "ansible", run: "never" do |ansible|
+    ansible.playbook = "playbook-cni.yml"
     ansible.groups = $ansible_groups
     ansible.limit = "consul_nomad"
   end
@@ -46,6 +59,37 @@ Vagrant.configure(2) do |config|
     ansible.groups = $ansible_groups
   end
 
+  config.vm.provision "scopy", type: "ansible", run: "never" do |ansible|
+    ansible.playbook = "service-copy.yml"
+    ansible.groups = $ansible_groups
+    ansible.limit = "consul_nomad"
+  end
+
+  config.vm.provision "scoh", type: "ansible", run: "never" do |ansible|
+    ansible.playbook = "service-run.yml"
+    ansible.groups = $ansible_groups
+    ansible.limit = "single_nomad"
+  end
+
+  config.vm.provision "scoh2", type: "ansible", run: "never" do |ansible|
+    ansible.playbook = "service-run2.yml"
+    ansible.groups = $ansible_groups
+    ansible.limit = "single_nomad"
+  end
+
+  config.vm.provision "shz", type: "ansible", run: "never" do |ansible|
+    ansible.playbook = "service-hz.yml"
+    ansible.groups = $ansible_groups
+    ansible.limit = "single_nomad"
+  end
+
+  config.vm.provision "scoh", type: "ansible", run: "never" do |ansible|
+    ansible.playbook = "service-run.yml"
+    ansible.groups = $ansible_groups
+    ansible.limit = "single_nomad"
+  end
+
+
   # Increase memory for Parallels Desktop
   config.vm.provider "parallels" do |p, o|
     p.memory = "1024"
@@ -53,7 +97,7 @@ Vagrant.configure(2) do |config|
 
   # Increase memory for Virtualbox
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "1024"
+    vb.memory = "4096"
   end
 
   # Increase memory for VMware

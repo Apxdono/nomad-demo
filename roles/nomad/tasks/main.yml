@@ -38,16 +38,16 @@
     group: nomad
     mode: 0755
 
-- name: Check if Nomad token for Vault exists
-  delegate_to: localhost
-  become: no
-  stat: path="{{ vault_token_dir }}/nomad-token"
-  register: _vault_nomad_token_file
+# - name: Check if Nomad token for Vault exists
+#   delegate_to: localhost
+#   become: no
+#   stat: path="{{ vault_token_dir }}/nomad-token"
+#   register: _vault_nomad_token_file
 
-- name: Load Nomad token
-  no_log: yes
-  set_fact: vault_nomad_token="{{ lookup('file', vault_token_dir + '/nomad-token') }}"
-  when: _vault_nomad_token_file.stat.exists
+# - name: Load Nomad token
+#   no_log: yes
+#   set_fact: vault_nomad_token="{{ lookup('file', vault_token_dir + '/nomad-token') }}"
+#   when: _vault_nomad_token_file.stat.exists
 
 - name: Copy config
   template:
@@ -81,9 +81,9 @@
     dest: "/etc/systemd/system/nomad.service"
     mode: 0644
 
-- name: Start nomad service
-  systemd:
-    name: nomad
-    state: restarted
-    daemon_reload: yes
-    enabled: yes
+# - name: Start nomad service
+#   systemd:
+#     name: nomad
+#     state: restarted
+#     daemon_reload: yes
+#     enabled: yes
